@@ -1,0 +1,11 @@
+rcore - rion's daemons core library
+
+This is a python library which makes the life easier when you writing simple twisted daemons
+its main features are:
+1) automatic config reloading and simple access to config
+2) database integration (criteria to request converters)
+3) contexts based threads emulation
+4) simple  task scheduler
+
+INSTALLATION:
+just use distutils
