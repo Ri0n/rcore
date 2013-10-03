@@ -18,7 +18,7 @@ class WeakHandler(object):
         if isinstance(handler, types.MethodType):
             self.methodName = handler.__func__.__name__
             self.invoke = self._callMethod
-            if handler.__self__: #bound method
+            if handler.__self__:  # bound method
                 self.ref = weakref.ref(handler.__self__, self.removeSelf)
             else:
                 self.ref = weakref.ref(handler.im_class, self.removeSelf)
@@ -65,6 +65,7 @@ class Observable(object):
             dq.setStopOnFailure(True)
             return dq.run().addCallback(lambda results: None if dq.isSuccess() else dq.lastResult()[1])
         return defer.succeed(True)
-    
+
+
 class Observer(object):
     pass

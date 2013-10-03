@@ -61,8 +61,8 @@ class Context(object):
     def db(self):
         """Instance of db connection for this job"""
         if not self._db:
-            from rcore import getCore
-            self._db = getCore().makeDbSession()
+            from rcore import Core
+            self._db = Core.instance().makeDbSession()
         return self._db
     
     def setOption(self, name, value):
@@ -87,10 +87,10 @@ def makeContext(constructor, *args, **kw):
     return id
 
 def deleteContext(id):
-    from rcore.globals import getCore
+    from rcore.globals import Core
     del _contextData["contexts"][id]
     if id == _contextData["currentId"]:
-        _contextData["currentId"] = getCore().mainContextId
+        _contextData["currentId"] = Core.instance().mainContextId
 
 def getContext(id = None):
     if id:
@@ -110,8 +110,8 @@ def executeInContext(func, *args, **kw):
     return executeInExactContext(func, Context, *args, **kw)
 
 def executeInExactContext(func, constructor, *args, **kw):
-    from rcore.globals import getCore
-    if getCore().debugEnabled():
+    from rcore.globals import Core
+    if Core.instance().debugEnabled():
         print "Context: execute in context: ", str(func)
     
     def deleteTempContext(result):

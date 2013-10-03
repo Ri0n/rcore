@@ -4,6 +4,7 @@ import sys
 from inspect import isclass
 from twisted.python import failure
 
+
 class RegularError(Exception):
     
     code = "UNKNOWN_ERROR"

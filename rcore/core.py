@@ -5,25 +5,43 @@ from __future__ import absolute_import
 import os
 import sys
 
+from watchdog.observers import Observer as fsObserver
 from twisted.python import log, syslog
 from twisted.python.logfile import DailyLogFile
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 
-from rcore.globals import appInit, getCore, config, Context, makeContext, setCurrentContext
+from rcore.globals import appInit, config, Context, makeContext, setCurrentContext
 from rcore.rpctools import RPCService
 from rcore.error import InternalError
+from rcore.observer import Observable
+
 
 class MainContext(Context):
     def log(self, msg):
         log.msg("MC: "+msg)
 
-class Core(object):
+_coreInstance = None
+
+
+class Core(Observable):
 
     @staticmethod
     def instance(cls):
-        return getCore()
+        """
+
+        @rtype : Core
+        """
+        return _coreInstance
     
     def __init__(self, configFile):
+        global _coreInstance
+        if _coreInstance:
+            raise Exception("Instance of app already exists")
+        _coreInstance = self
+
+        self._deferredStopList = []
+        self.fs_watch = fsObserver()
+
         appInit(self)
         config.reload(configFile)
         try:
@@ -44,7 +62,6 @@ class Core(object):
         
         from rcore.alarm import Alarm
         self._rpcServices = {}
-        self.registerRPCService("alarm", Alarm())
         self._users = {}
         self.mainContextId = makeContext(MainContext)
         setCurrentContext(self.mainContextId)
@@ -59,17 +76,34 @@ class Core(object):
     def getRPCService(self, name):
         return self._rpcServices[name]
 
-    def emergencyStop(self, msg):
-        def alarmCB(result):
+    def delayStop(self, d):
+        """
+        Delay stop of daemon with deferred d
+        """
+        self._deferredStopList.append(d)
+
+    def stop(self, msg):
+        """
+        emits aboutToStop event
+        receivers can delay stop by adding their deferreds by calling Core.delayStop
+        """
+        def cb(result):
             reactor.stop()
-        print "CRITICAL ERROR: ", msg, "\n stopping server.."
-        d = self.getRPCService("alarm").notify("CRITICAL ERROR: " + msg + "\n\nserver stopped..", ['error'])
-        d.addCallback(alarmCB)
-        
+            log.msg("Server stopped")
+
+        log.msg("Stopping server: "+msg)
+        self.emit("aboutToStop")
+        if len(self._deferredStopList):
+            dl = defer.DeferredList(self._deferredStopList)
+            dl.addBoth(cb)
+            defer.waitForDeferred(dl)
+        else:
+            cb()
+
     def getUser(self, login):
         return self._users[login]
     
-    def debugEnabled(self, opt = ""):
+    def debugEnabled(self, opt=""):
         try:
             if config().debug.enable:
                 return bool(int(config().debug._get(opt, 0))) if opt else True
