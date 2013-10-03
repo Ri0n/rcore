@@ -39,7 +39,7 @@ class DQueue(object):
                 self._successCount += 1
                 self._lastResult = [True, result, item]
                 self._results.append(self._lastResult)
-            except Exception, e:
+            except Exception as e:
                 self._success = False
                 failure = getFailureFor(e)
                 if not failure.check(RegularError):
@@ -104,18 +104,18 @@ class ActionQueueItem:
         return self
     
     def invoke(self, defualtCallback, defaultErrback):
-        from rcore import getCore
-        if getCore().debugEnabled():
-            print "ActionQueue: Executing job from queue: ", str(self.func)
+        from rcore import Core
+        if Core.instance().debugEnabled():
+            print("ActionQueue: Executing job from queue: " + str(self.func))
         self.active = True
         d = defer.maybeDeferred(self.func, *self.args, **self.kwargs)
         if self.defer:
-            if getCore().debugEnabled():
-                print "ActionQueue: adding own callback"
+            if Core.instance().debugEnabled():
+                print("ActionQueue: adding own callback")
             d.addCallbacks(self.defer.callback, self.defer.errback)
         else:
-            if getCore().debugEnabled():
-                print "ActionQueue: adding default callback"
+            if Core.instance().debugEnabled():
+                print("ActionQueue: adding default callback")
             d.addCallbacks(defualtCallback, defaultErrback)
         return d
             
@@ -124,7 +124,6 @@ class ActionQueueItem:
 
 class ActionQueue(list):
     def __init__(self, *args, **kwargs):
-        from rcore import getCore
         list.__init__(self, *args, **kwargs)
         self._errback = self._callback = lambda result: result
         self.active = False;
@@ -132,33 +131,34 @@ class ActionQueue(list):
         self.finishWaiter = None
         
     def append(self, func, *args, **kwargs):
-        from rcore import getCore
-        if getCore().debugEnabled():
-            print "ActionQueue: Adding job to queue: ", str(func)
+        from rcore import Core
+        if Core.instance().debugEnabled():
+            print("ActionQueue: Adding job to queue: " + str(func))
         item = ActionQueueItem(func, args, kwargs)
         list.append(self, item)
         if not self.checkPlanned:
             self.checkPlanned = True
-            if getCore().debugEnabled():
-                print "ActionQueue: Planning check queue"
+            if Core.instance().debugEnabled():
+                print("ActionQueue: Planning check queue")
             reactor.callLater(0, self.checkQueue)
         return item
         
     def checkQueue(self):
-        from rcore import getCore
+        from rcore import Core
         
         def finished(result, item):
-            if getCore().debugEnabled():
-                print "ActionQueue: job finished:", str(result)
+            if Core.instance().debugEnabled():
+                print("ActionQueue: job finished: " + str(result))
             
             self.active = False;
             reactor.callLater(0, self.checkQueue)
             if item.contextId:
                 try:
                     setCurrentContext(item.contextId)
-                except Exception, e:
-                    print "ActionQueue: Unable to restore context. this should never happen and may damage other context and their data."
-                    print "ActionQueue: Actual result was:", str(result)
+                except Exception as e:
+                    print("ActionQueue: Unable to restore context. "
+                          "this should never happen and may damage other context and their data.")
+                    print("ActionQueue: Actual result was: " + str(result))
                     return ContextError(str(e)).toFailure()
             #import gc
             #from rcore import Context
@@ -166,8 +166,8 @@ class ActionQueue(list):
             #return result
         
         
-        if getCore().debugEnabled():
-            print "ActionQueue: Checking queue: " + (str(len(self)) + " jobs" if len(self) else "empty")
+        if Core.instance().debugEnabled():
+            print("ActionQueue: Checking queue: " + (str(len(self)) + " jobs" if len(self) else "empty"))
             
         if len(self):
             if not self.active:

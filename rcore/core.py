@@ -10,7 +10,7 @@ from twisted.python import log, syslog
 from twisted.python.logfile import DailyLogFile
 from twisted.internet import reactor, defer
 
-from rcore.globals import appInit, config, Context, makeContext, setCurrentContext
+from rcore.context import Context, makeContext, setCurrentContext
 from rcore.rpctools import RPCService
 from rcore.error import InternalError
 from rcore.observer import Observable
@@ -26,9 +26,8 @@ _coreInstance = None
 class Core(Observable):
 
     @staticmethod
-    def instance(cls):
+    def instance():
         """
-
         @rtype : Core
         """
         return _coreInstance
@@ -42,7 +41,7 @@ class Core(Observable):
         self._deferredStopList = []
         self.fs_watch = fsObserver()
 
-        appInit(self)
+        from rcore.config import config
         config.reload(configFile)
         try:
             logDest = config().log.destination

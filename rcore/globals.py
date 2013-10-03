@@ -13,9 +13,5 @@ from rcore.context import (
 )
 from rcore.scheduler import scheduler  # @UnusedImport
 
-def appInit(core):
-    global _coreInstance
-    _coreInstance = core
-
-__all__ = ["config", "scheduler", "appInit", "Context",
+__all__ = ["config", "scheduler", "Context",
            "getContext", "makeContext", "setCurrentContext", "executeInContext", "log"]

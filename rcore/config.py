@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 import os
+import json
 from watchdog.events import FileSystemEventHandler
-from ConfigParser import ConfigParser
 from rcore.observer import Observable
-from rcore import Core
+from rcore.core import Core
 
 
 class ConfigWatcher(FileSystemEventHandler):
@@ -31,8 +31,8 @@ class Config(Observable):
         self.configFile = configFile
         if not os.path.exists(self.configFile):
             raise Exception("Config file %s not found" % self.configFile)
-        self.parser = ConfigParser()
-        self.parser.read(self.configFile)
+        with file(self.configFile) as f:
+            self.config = json.load(f)
         Core.instance().fs_watch.schedule(ConfigWatcher(self), self.configFile)
 
     def onChanged(self):

@@ -10,7 +10,7 @@ from twisted.internet import reactor, defer
 from twisted.internet.error import ConnectionRefusedError
 from twisted.internet.ssl import DefaultOpenSSLContextFactory
 
-from rcore import config, user, getCore
+from rcore import config, user, Core
 from rcore.error import getFailureFor, RegularError, InternalError, NoRPCProxiesLeft
 from rcore.rpctools import RPCService
 from rcore.context import Context, waitForDeferred, makeContext, setCurrentContext, deleteContext
@@ -98,13 +98,13 @@ class XMLRPC(xmlrpc.XMLRPC):
         request.setHeader("content-type", "text/xml")
         try:
             args, functionPath = xmlrpclib.loads(request.content.read(), use_datetime=True)
-        except Exception, e:
+        except Exception as e:
             f = xmlrpclib.Fault(self.FAILURE, "Can't deserialize input: %s" % (e,))
             self._cbRender(f, request)
         else:
             try:
                 function = self._getFunction(functionPath)
-            except xmlrpclib.Fault, f:
+            except xmlrpclib.Fault as f:
                 self._cbRender(f, request)
             else:
                 def closeReq(result):
@@ -163,14 +163,14 @@ class Service(RPCService):
                 result = wfd.getResult()
                 yield result
                 return
-            except Exception, e:
+            except Exception as e:
                 errStr = str(e) if isinstance(e, Fault) else getFailureFor(e).getTraceback()
                 msg = "Internal XML-RPC Failed: " + self.__class__.__name__ + ":" + self._methodPath + \
                     str(params) + "\n" + errStr
                 log.msg(msg)
                 self.__class__._lastError = msg
                 if self._alertable:
-                    getCore().getRPCService("alarm").notify([msg,
+                    Core.instance().getRPCService("alarm").notify([msg,
                         "<div style='color:#ff0000;font-weight:bold'>%s</div>" % escape(self.__class__._lastError).replace("\n", "<br/>")], ["error"])
                 raise
         else:

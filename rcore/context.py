@@ -87,7 +87,7 @@ def makeContext(constructor, *args, **kw):
     return id
 
 def deleteContext(id):
-    from rcore.globals import Core
+    from rcore.core import Core
     del _contextData["contexts"][id]
     if id == _contextData["currentId"]:
         _contextData["currentId"] = Core.instance().mainContextId
@@ -110,7 +110,7 @@ def executeInContext(func, *args, **kw):
     return executeInExactContext(func, Context, *args, **kw)
 
 def executeInExactContext(func, constructor, *args, **kw):
-    from rcore.globals import Core
+    from rcore.core import Core
     if Core.instance().debugEnabled():
         print "Context: execute in context: ", str(func)
     

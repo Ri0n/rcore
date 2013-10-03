@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from twisted.web.xmlrpc import Proxy
 
-from rcore.globals import config
+from rcore.config import config
 from rcore.xmlrpc import Service
 
 class Alarm(Service):

@@ -15,8 +15,8 @@ STATE_PAUSED = 0
 STATE_DELAY = 1
 STATE_WORK = 2
 
-class SchedulerJob(object):
 
+class SchedulerJob(object):
     def __init__(self, job, *args):
         self.job = job
         self.args = args
@@ -25,7 +25,7 @@ class SchedulerJob(object):
         self.time = None
         self.result = None
         self.state = STATE_PAUSED
-        self.pauseRequested = False 
+        self.pauseRequested = False
         self.maxExecTime = timedelta(minutes=10)
         self.currentDeferred = None
         self.timeoutDC = None
@@ -43,8 +43,8 @@ class SchedulerJob(object):
         if self.repeatedDelay < timedelta(seconds=1):
             raise Exception("period too small!")
         return self
-    
-    def start(self, startAt = None):
+
+    def start(self, startAt=None):
         self.state = STATE_DELAY
         now = datetime.now()
         tt = type(startAt)
@@ -63,7 +63,7 @@ class SchedulerJob(object):
         if self.time < now and not self.repeatedDelay:
             raise InternalError("Invalid scheduler time")
         td = self.time - now
-        self.timeHandler = reactor.callLater(td.days*86400+td.seconds, self._execute)
+        self.timeHandler = reactor.callLater(td.days * 86400 + td.seconds, self._execute)
         return self
 
     def cancel(self):
@@ -73,12 +73,14 @@ class SchedulerJob(object):
 
     def force(self):
         """active job right now. usefull in case of looped jobs"""
+
         def returnActualResult(result):
             return self.result
+
         d = self._execute()
         d.addCallback(returnActualResult)
         return d
-    
+
     def pause(self):
         if self.state != STATE_PAUSED:
             if self.timeHandler and self.timeHandler.active():
@@ -88,7 +90,7 @@ class SchedulerJob(object):
                 self.pauseRequested = True
             else:
                 self.state = STATE_PAUSED
-            
+
     def resume(self):
         if self.state == STATE_PAUSED:
             self._nextLoop()
@@ -98,16 +100,17 @@ class SchedulerJob(object):
         while self.time - now < timedelta(seconds=1): # don't call too often or in past
             self.time += self.repeatedDelay
         td = self.time - now
-        self.timeHandler = reactor.callLater(td.days*86400+td.seconds, self._execute)
+        self.timeHandler = reactor.callLater(td.days * 86400 + td.seconds, self._execute)
 
     def _execute(self):
         def checkTimeout(d):
             if d and not d.called:
-                from rcore import getCore
-                getCore().getRPCService("alarm").notify("Execution of %s was timed out. This usually mean "
-                "that deferreds chain is corrupted or something just hangs and "
-                "its definitelly a bad sign. notice if this a looped job next "
-                "cycle will never be started" % repr(self), ["error"])
+                from rcore import Core
+
+                Core.instance().getRPCService("alarm").notify("Execution of %s was timed out. This usually mean "
+                                                              "that deferreds chain is corrupted or something just hangs and "
+                                                              "its definitelly a bad sign. notice if this a looped job next "
+                                                              "cycle will never be started" % repr(self), ["error"])
 
         if scheduler.aboutToExecute(self) == False: # current execution cancelled
             return defer.succeed(None)
@@ -136,30 +139,33 @@ class SchedulerJob(object):
         self.currentDeferred = defer.maybeDeferred(self.job, *self.args)
         self.currentDeferred.addBoth(handleResult)
         reactor.callLater(self.maxExecTime.days * 86400 + \
-            self.maxExecTime.seconds, checkTimeout, self.currentDeferred)
+                          self.maxExecTime.seconds, checkTimeout, self.currentDeferred)
         return self.currentDeferred
 
     def _convertDelay(self, strTime):
         if isinstance(strTime, timedelta):
             return strTime
         ret = dict(sec=0, min=0, hour=0)
-        names = ["sec","min","hour"]
+        names = ["sec", "min", "hour"]
         exp = strTime.split(':')
         exp.reverse()
         for v in names:
             if len(exp):
                 ret[v] = int(exp[0])
                 del exp[0]
-            else: break
+            else:
+                break
         return timedelta(hours=ret["hour"], minutes=ret["min"], seconds=ret["sec"])
-    
+
+
 class ContextedSchedulerJob(SchedulerJob):
     def __init__(self, context, *args):
         assert issubclass(context, Context) and isinstance(context.run, collections.Callable)
-        super(ContextedSchedulerJob, self).__init__(lambda: executeInExactContext(lambda: getContext().run(), context), *args)
+        super(ContextedSchedulerJob, self).__init__(lambda: executeInExactContext(lambda: getContext().run(), context),
+                                                    *args)
+
 
 class Scheduler(object):
-
     SkipBlocked = 1
     RescheduleBlocked = 2
     QueueBlocked = 3
@@ -173,7 +179,7 @@ class Scheduler(object):
         j = SchedulerJob(executor, *args)
         self.scheduled.append(j)
         return j
-    
+
     def contextJob(self, context, *args):
         j = ContextedSchedulerJob(context, *args)
         self.scheduled.append(j)
@@ -209,25 +215,27 @@ class Scheduler(object):
         for j in self.blockers[jid]:
             if j.isWorking():
                 if jid not in self.blockActions:
-                    from rcore import getCore
-                    getCore().getRPCService("alarm").notify("Execution of %s was blocked by currently"
-                    " working %s and no handlers for this case were set. This"
-                    " usually means architectural design flaw." % \
-                    (repr(job), repr(j)), ["error"])
+                    from rcore import Core
+
+                    Core.instance().getRPCService("alarm").notify("Execution of %s was blocked by currently"
+                                                            " working %s and no handlers for this case were set. This"
+                                                            " usually means architectural design flaw." % \
+                                                            (repr(job), repr(j)), ["error"])
                     return False
                 if self.blockActions[jid]['action'] == self.QueueBlocked:
                     log.msg("execution of %s queued" % repr(job))
+
                     def queueExecution(result, job):
                         log.msg("executing queued job" % repr(job))
                         reactor.callLater(0, job._execute)
                         return result
+
                     j.currentDeferred.addBoth(queueExecution, job)
                 if self.blockActions[jid]['action'] == self.RescheduleBlocked:
                     raise Exception("RescheduleBlocked is not implemented")
 
                 return False
         return True
-
 
 
 scheduler = Scheduler()
