@@ -9,4 +9,4 @@ class Alarm(Service):
     restoreContext = False
     
     def _getProxy(self):
-        return Proxy(config().hermes.url.encode("utf-8"))
+        return Proxy(config()['hermes']['url'].encode("utf-8"))

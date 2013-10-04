@@ -44,10 +44,10 @@ class Core(Observable):
         from rcore.config import config
         config.reload(configFile)
         try:
-            logDest = config().log.destination
+            logDest = config()['log']['destination']
             if logDest == 'syslog':
                 try:
-                    prefix = config().log.syslogprefix
+                    prefix = config()['log']['syslogprefix']
                 except:
                     prefix = os.path.basename(sys.argv[0])
                 syslog.startLogging(prefix)
@@ -55,10 +55,10 @@ class Core(Observable):
                 log.startLogging(sys.stdout)
             else:
                 log.startLogging(DailyLogFile(os.path.basename(logDest), os.path.dirname(logDest)))
-        except:
+        except Exception as e:
             log.startLogging(sys.stdout)
-            log.msg("Setting log from config file is failed. continue with logging to stdout")
-        
+            log.msg("Setting log from config file is failed. continue with logging to stdout: " + str(e))
+
         from rcore.alarm import Alarm
         self._rpcServices = {}
         self._users = {}
@@ -104,7 +104,7 @@ class Core(Observable):
     
     def debugEnabled(self, opt=""):
         try:
-            if config().debug.enable:
+            if config()['debug']['enable']:
                 return bool(int(config().debug._get(opt, 0))) if opt else True
         except:
             pass

@@ -2,20 +2,19 @@ from __future__ import absolute_import
 
 import os
 import json
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import PatternMatchingEventHandler
 from rcore.observer import Observable
-from rcore.core import Core
 
-
-class ConfigWatcher(FileSystemEventHandler):
-    def __init__(self, config):
-        self.config = config
+class ConfigWatcher(PatternMatchingEventHandler):
+    def __init__(self, cb, filename):
+        self.conf_change_cb = cb
+        super(ConfigWatcher, self).__init__([filename], ignore_directories=True)
 
     def on_created(self, e):
-        self.config.onChanged()
+        self.conf_change_cb()
 
     def on_modified(self, event):
-        self.config.onChanged()
+        self.conf_change_cb()
 
 
 class Config(Observable):
@@ -31,9 +30,14 @@ class Config(Observable):
         self.configFile = configFile
         if not os.path.exists(self.configFile):
             raise Exception("Config file %s not found" % self.configFile)
-        with file(self.configFile) as f:
-            self.config = json.load(f)
-        Core.instance().fs_watch.schedule(ConfigWatcher(self), self.configFile)
+        with open(self.configFile, "rb") as f:
+            try:
+                self.config = json.load(f)
+            except ValueError as e:
+                print("Config syntax error: " + str(e))
+
+        from rcore.core import Core
+        Core.instance().fs_watch.schedule(ConfigWatcher(self.onChanged, os.path.basename(self.configFile)), os.path.dirname(self.configFile))
 
     def onChanged(self):
         try:
@@ -45,7 +49,7 @@ class Config(Observable):
             self._changeChecker.start(self.changeCheckInterval, False)
 
     def __call__(self):
-        return self.config.root
+        return self.config
 
 if "config" not in globals():
     config = Config()
