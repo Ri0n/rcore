@@ -13,4 +13,5 @@ dist = setup(
     license="GPL-3",
 
     packages=['rcore'],
+    requires=["watchdog", "twisted"]
 )
