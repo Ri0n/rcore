@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import os
 import sys
 
-from watchdog.observers import Observer as fsObserver
 from twisted.python import log, syslog
 from twisted.python.logfile import DailyLogFile
 from twisted.internet import reactor, defer
@@ -39,7 +38,6 @@ class Core(Observable):
         _coreInstance = self
 
         self._deferredStopList = []
-        self.fs_watch = fsObserver()
 
         from rcore.config import config
         config.reload(configFile)
