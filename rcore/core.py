@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import os
 import sys
 
-from twisted.python import log, syslog
+from twisted.python import log
 from twisted.python.logfile import DailyLogFile
 from twisted.internet import reactor, defer
 
@@ -44,6 +44,7 @@ class Core(Observable):
         try:
             logDest = config()['log']['destination']
             if logDest == 'syslog':
+                from twisted.python import syslog
                 try:
                     prefix = config()['log']['syslogprefix']
                 except:

@@ -8,7 +8,6 @@ from twisted.web import server, xmlrpc, http, resource
 from twisted.python import failure, log
 from twisted.internet import reactor, defer
 from twisted.internet.error import ConnectionRefusedError
-from twisted.internet.ssl import DefaultOpenSSLContextFactory
 
 from rcore import config, user, Core
 from rcore.error import getFailureFor, RegularError, InternalError, NoRPCProxiesLeft
@@ -22,6 +21,7 @@ def listen(url, site):
     global _defaultUser
     data = urlparse.urlparse(url, "http", False)
     if data.scheme == "https":
+        from twisted.internet.ssl import DefaultOpenSSLContextFactory
         query = urlparse.parse_qs(data.query)
         reactor.listenSSL(
             int(data.port or 443),
