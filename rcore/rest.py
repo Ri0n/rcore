@@ -4,6 +4,7 @@ import json
 from twisted.web.client import getPage
 from twisted.python import log
 
+
 class Request(object):
     def __init__(self, baseUrl):
         self.baseUrl = str(baseUrl)

@@ -2,6 +2,13 @@
 Created on 29.09.2010
 
 @author: rion
+
+implementation of public subscribe design pattern
+
+to use it, inherit your classes from Observable to be able emit events and to connect to events of other classes.
+
+to emit event just call self.emit("event_name", args..)
+to connect use obj.connect("event_name", callback)  # notice sender's instance will be passed to callback as 1st arg
 '''
 from __future__ import absolute_import
 

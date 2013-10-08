@@ -38,4 +38,3 @@ class User(object):
             if r:
                 u.addRole(r)
         return u
-        

@@ -1,5 +1,14 @@
 # Context specific classes and functions
 
+# Contexts are some long living instances which can be accessed from everywhere.
+# For example you are handling simultaneous xmlrpc requests. And for each request you want to keep some global data
+# For each request this data is different (for example login of user of request), so you assign context to request
+# and store data there.
+# You can inherit from Context and pass it to makeContext for example or to executeInExactContext
+#
+# this module has it's own waitForDeferred, so you can use deferred generators to always stay in exact context
+# which is probably most preferable way of using contexts
+
 import time
 
 from twisted.python import log as twistedLog
@@ -110,6 +119,15 @@ def executeInContext(func, *args, **kw):
     return executeInExactContext(func, Context, *args, **kw)
 
 def executeInExactContext(func, constructor, *args, **kw):
+    """
+    Creates instance of passed context constructor and set it current before starting func.
+    restores context before return.
+    @param func:
+    @param constructor:
+    @param args:
+    @param kw:
+    @return:
+    """
     from rcore.core import Core
     if Core.instance().debugEnabled():
         print "Context: execute in context: ", str(func)

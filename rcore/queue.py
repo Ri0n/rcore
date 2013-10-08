@@ -12,8 +12,39 @@ from rcore.error import getFailureFor, ContextError, RegularError, InternalError
 #
 # This class is something like extended DeferredList which stores items itself
 # in resultset and has advanced settings and methods
+
+
 class DQueue(object):
+    """
+    Does some asynchronous work for list of items.
+
+    The work may return Deferred or some result or throw exception.
+    it's preferable to throw exceptions based on RegularException to be shown in the log.
+    when all items handled or callback will be called with results list as argument.
+    results has a form like [[bool success, result1, item1], [bool success, result2, item2], ...].
+    in case of failures stored result item is an instance of Failure.
+
+    Example of usage:
+
+    def handle_results(results):
+        for r in results:
+            if results[0]:  # success
+                with open("file"+str(results[2]), "w") as f
+                    f.write(results[1])
+
+    q = DQueue([1,2,3], lambda item, url: getPage(url+"/"+str(item), url)
+    d = q.run()
+    d.addCallback(handle_results)
+
+    """
     def __init__(self, items, work, *args, **kw):
+        """
+        @param items: list of items
+        @param work: Callable wor
+        @param args: list of args passed to work
+        @param kw: dict of kwargs passed to work
+        @return:
+        """
         self._items = items[:]
         self._work = work
         self._args = args
@@ -25,7 +56,11 @@ class DQueue(object):
         self._lastResult = None
         self._firstError = None
 
-    def setStopOnFailure(self, status = True):
+    def setStopOnFailure(self, status=True):
+        """
+        if True stops queue handling on first exception calling errback with Failure
+        @param status: bool on/off stop on failure
+        """
         self._stopOnFailure = status
 
     @defer.deferredGenerator
@@ -88,7 +123,10 @@ class ActionQueueItem:
         self.active = False
         
     def setIdentifier(self, i):
-        self.identifier= i
+        """
+        Identifier allows search and clean this item in the queue
+        """
+        self.identifier = i
         return self
         
     def getDeferred(self):
@@ -120,10 +158,24 @@ class ActionQueueItem:
         return d
             
     def isActive(self):
+        """
+        Checks if execution started all already finished.
+
+         False means this item still wait in the queue
+        """
         return self.active
 
+
 class ActionQueue(list):
+    """
+    It's more like endless queue.
+
+    it sleeps while queue is empty and execute some action when it's queued
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Constructor accepts standard for `list` args
+        """
         list.__init__(self, *args, **kwargs)
         self._errback = self._callback = lambda result: result
         self.active = False;
@@ -131,6 +183,16 @@ class ActionQueue(list):
         self.finishWaiter = None
         
     def append(self, func, *args, **kwargs):
+        """
+        Enqueue some action `func`.
+
+        Passed func will be executed with passed args and kwargs (no other args passed to func)
+        You can get deferred from returned action and do with it what you want
+        @param func: Callable
+        @param args: list of args for callable
+        @param kwargs: dict of kwargs for callable
+        @return: ActionQueueItem
+        """
         from rcore import Core
         if Core.instance().debugEnabled():
             print("ActionQueue: Adding job to queue: " + str(func))
@@ -211,8 +273,14 @@ class ActionQueue(list):
         raise InternalError("Can't move to top not existent ActionQueueItem")
     
     def waitForFinish(self):
+        """
+        Actually doesn't wait but returns Deferred which is fired when queue is empty.
+
+        You can call this method even on already empty queue with the same result
+
+        @return: Deferred
+        """
         if not self.checkPlanned:
             return defer.succeed(None)
         self.finishWaiter = defer.Deferred()
         return self.finishWaiter
-    

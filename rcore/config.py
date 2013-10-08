@@ -1,3 +1,14 @@
+# auto reloading config handling class with pubsub inside
+#
+# config should be stored in json format
+# config file is reloaded when changed or recreated
+# config class sends "changed" event via public subscribe
+#
+# usage:
+# from rcore import config
+# config.connect("changed", my_callback)  # my_callback will be called when config reloaded (details in observer.py)
+# config()["var1"]["subvar2"]  # access to config's data
+
 from __future__ import absolute_import
 
 import os

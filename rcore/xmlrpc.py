@@ -217,5 +217,3 @@ class ExchangableService(Service):
         d = Service.__call__(self, *params)
         d.addErrback(checkConnection)
         return d
-        
-        
