@@ -17,6 +17,8 @@ from rcore.observer import Observable
 
 class MainContext(Context):
     def log(self, msg):
+        if type(msg) == unicode:
+            msg = msg.encode("UTF-8")
         log.msg("MC: "+msg)
 
 _coreInstance = None
