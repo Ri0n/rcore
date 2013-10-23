@@ -104,9 +104,10 @@ class Core(Observable):
         return self._users[login]
     
     def debugEnabled(self, opt=""):
+        from rcore.config import config
         try:
             if config()['debug']['enable']:
-                return bool(int(config().debug._get(opt, 0))) if opt else True
+                return bool(int(config().debug.get(opt, 0))) if opt else True
         except:
             pass
         return False

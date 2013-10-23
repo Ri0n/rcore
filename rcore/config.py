@@ -52,7 +52,7 @@ class Config(Observable):
         with open(self.configFile, "rb") as f:
             try:
                 self.config = json.load(f)
-                print("Config file loaded successfully")
+                print("Config file %s is loaded successfully" % os.path.abspath(self.configFile))
                 if not self.observer:
                     self.observer = Observer()
                     self.observer.schedule(ConfigWatcher(self._onChanged, os.path.basename(self.configFile)),
