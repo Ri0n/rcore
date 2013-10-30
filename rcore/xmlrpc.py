@@ -103,7 +103,7 @@ class XMLRPC(xmlrpc.XMLRPC):
             self._cbRender(f, request)
         else:
             try:
-                function = self._getFunction(functionPath)
+                function = self.lookupProcedure(functionPath)
             except xmlrpclib.Fault as f:
                 self._cbRender(f, request)
             else:
