@@ -82,7 +82,7 @@ class Core(Observable):
         """
         self._deferredStopList.append(d)
 
-    def stop(self, msg):
+    def stop(self, msg="no message"):
         """
         emits aboutToStop event
         receivers can delay stop by adding their deferreds by calling Core.delayStop
@@ -98,7 +98,7 @@ class Core(Observable):
             dl.addBoth(cb)
             defer.waitForDeferred(dl)
         else:
-            cb()
+            cb(None)
 
     def getUser(self, login):
         return self._users[login]
