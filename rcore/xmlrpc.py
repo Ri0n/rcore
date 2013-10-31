@@ -74,7 +74,15 @@ class Site(server.Site):
 
 
 class XMLRPC(xmlrpc.XMLRPC):
-    """PAMM Request demon"""
+    """
+    RCore XML-RPC Resource
+
+    Difference from twisted xml-rpc:
+    1) support for authentication
+    2) support for context per request
+    """
+
+    enable_guest = False
 
     def auth(self, user, passwd):
         global _defaultUser
@@ -86,13 +94,9 @@ class XMLRPC(xmlrpc.XMLRPC):
         user = request.getUser()
         passwd = request.getPassword()
 
-        if user=='' and passwd=='':
+        if not self.enable_guest and not self.auth(user, passwd):
             request.setResponseCode(http.UNAUTHORIZED)
-            return 'Authorization required!'
-
-        if not self.auth(user, passwd):
-            request.setResponseCode(http.UNAUTHORIZED)
-            return 'Authorization failed!'
+            return (user=='' and passwd=='') and 'Authorization required!' or 'Authorization failed!'
 
         request.content.seek(0, 0)
         request.setHeader("content-type", "text/xml")
@@ -121,10 +125,19 @@ class XMLRPC(xmlrpc.XMLRPC):
                 
                 requestId = makeContext(Request, request, (functionPath, args))
                 setCurrentContext(requestId)
+                # Use this list to track whether the response has failed or not.
+                # This will be used later on to decide if the result of the
+                # Deferred should be written out and Request.finish called.
+                responseFailed = []
+                request.notifyFinish().addErrback(responseFailed.append)
+                if getattr(function, 'withRequest', False):
+                    d = defer.maybeDeferred(function, request, *args)
+                else:
+                    d = defer.maybeDeferred(function, *args)
                 d = defer.maybeDeferred(function, *args)
                 d.addBoth(closeReq)
                 d.addErrback(self._ebRender)
-                d.addCallback(self._cbRender, request)
+                d.addCallback(self._cbRender, request, responseFailed)
         return server.NOT_DONE_YET
 
 
