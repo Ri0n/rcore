@@ -38,6 +38,7 @@ from __future__ import absolute_import
 
 import os
 import json
+import re
 from watchdog.events import FileSystemEventHandler, EVENT_TYPE_CREATED, EVENT_TYPE_MODIFIED
 from watchdog.observers import Observer
 from rcore.observer import Observable
@@ -76,7 +77,9 @@ class Config(Observable):
             raise Exception("Config file %s not found" % self.configFile)
         with open(self.configFile, "rb") as f:
             try:
-                self.config = json.load(f)
+                data = f.read()
+                data = re.sub('^\s*(/\*.*\*/\s*|//.*)$', "", data, flags=re.M)
+                self.config = json.loads(data)
                 print("Config file %s is loaded successfully" % os.path.abspath(self.configFile))
                 if not self.observer:
                     self.observer = Observer()
@@ -99,6 +102,13 @@ class Config(Observable):
 
     def __call__(self):
         return self.config
+
+    def save(self, filename):
+        d = os.path.dirname(filename)
+        if not os.path.exists(d):
+            os.makedirs(d, 0755)  # hardcoded chmod?
+        with open(filename, "w") as f:
+            json.dump(self.config, f)
 
 if "config" not in globals():
     config = Config()

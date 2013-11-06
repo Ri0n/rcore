@@ -9,7 +9,7 @@ dist = setup(
     necessary tools like xmlrpc, schedulers, config handing, db and etc""",
     author="rion",
     author_email="rion4ik@gmail.com",
-    url="https://github.com/rcore",
+    url="https://github.com/Ri0n/rcore",
     license="GPL-3",
 
     packages=['rcore'],
