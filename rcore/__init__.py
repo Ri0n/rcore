@@ -33,7 +33,7 @@ __date__ ="$09.02.2010 19:23:42$"
 from rcore.config import config
 from rcore.scheduler import scheduler
 from rcore.context import getContext, log
-from rcore.core import Core
+from rcore.core import Core, get_system_username
 from rcore.observer import Observable
 
-__all__ = ["config", "scheduler", "getContext" "Core", "log", "Observable"]
+__all__ = ["config", "scheduler", "getContext" "Core", "log", "Observable", "get_system_username"]

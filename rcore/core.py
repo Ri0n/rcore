@@ -27,6 +27,8 @@ from __future__ import absolute_import
 
 import os
 import sys
+import getpass
+import locale
 
 from twisted.python import log
 from twisted.python.logfile import DailyLogFile
@@ -36,6 +38,22 @@ from rcore.context import Context, makeContext, setCurrentContext
 from rcore.rpctools import RPCService
 from rcore.error import InternalError
 from rcore.observer import Observable
+
+
+def get_system_username():
+    try:
+        result = getpass.getuser()
+    except (ImportError, KeyError):
+        # KeyError will be raised by os.getpwuid() (called by getuser())
+        # if there is no corresponding entry in the /etc/passwd file
+        # (a very restricted chroot environment, for example).
+        return ''
+    try:
+        result = result.decode(locale.getdefaultlocale()[1])
+    except UnicodeDecodeError:
+        # UnicodeDecodeError - preventive treatment for non-latin Windows.
+        return ''
+    return result
 
 
 class MainContext(Context):
