@@ -91,6 +91,8 @@ class Config(Observable):
 
             except ValueError as e:
                 print("Config syntax error: " + str(e))
+                if self.config is None:
+                    raise SyntaxError("Config syntax error: " + str(e))
 
     def _onChanged(self):
         try:
