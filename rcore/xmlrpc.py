@@ -159,7 +159,6 @@ class XMLRPC(xmlrpc.XMLRPC):
                     d = defer.maybeDeferred(function, request, *args)
                 else:
                     d = defer.maybeDeferred(function, *args)
-                d = defer.maybeDeferred(function, *args)
                 d.addBoth(closeReq)
                 d.addErrback(self._ebRender)
                 d.addCallback(self._cbRender, request, responseFailed)

@@ -71,23 +71,25 @@ class Config(Observable):
         self.config = None
         self.observer = None
 
+    def stopWatching(self):
+        if self.observer and self.observer.isAlive():
+            self.observer.stop()
+
     def reload(self, configFile = None):
-        self.configFile = configFile
-        if not os.path.exists(self.configFile):
-            raise Exception("Config file %s not found" % self.configFile)
-        with open(self.configFile, "rb") as f:
+        if not os.path.exists(configFile):
+            raise Exception("Config file %s not found" % str(configFile))
+        with open(configFile, "rb") as f:
             try:
                 data = f.read()
                 data = re.sub('^\s*(/\*.*\*/\s*|//.*)$', "", data, flags=re.M)
                 self.config = json.loads(data)
+                self.configFile = configFile
                 print("Config file %s is loaded successfully" % os.path.abspath(self.configFile))
                 if not self.observer:
                     self.observer = Observer()
                     self.observer.schedule(ConfigWatcher(self._onChanged, os.path.basename(self.configFile)),
                                            os.path.dirname(self.configFile), recursive=False)
                     self.observer.start()
-                    from rcore.core import Core
-                    Core.instance().connect("aboutToStop", lambda sender: self.observer.stop())
 
             except ValueError as e:
                 print("Config syntax error: " + str(e))
@@ -105,7 +107,8 @@ class Config(Observable):
     def __call__(self):
         return self.config
 
-    def save(self, filename):
+    def save(self, filename=None):
+        filename = filename or self.configFile
         d = os.path.dirname(filename)
         if not os.path.exists(d):
             os.makedirs(d, 0755)  # hardcoded chmod?

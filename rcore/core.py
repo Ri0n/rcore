@@ -144,9 +144,11 @@ class Core(Observable):
         def cb(result):
             reactor.stop()
             log.msg("Server stopped")
-
+        from rcore.config import config
+        config.stopWatching()
         log.msg("Stopping server: "+msg)
         self.emit("aboutToStop")
+
         if len(self._deferredStopList):
             dl = defer.DeferredList(self._deferredStopList)
             dl.addBoth(cb)
