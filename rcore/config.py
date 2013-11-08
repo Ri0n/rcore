@@ -90,17 +90,19 @@ class Config(Observable):
                     self.observer.schedule(ConfigWatcher(self._onChanged, os.path.basename(self.configFile)),
                                            os.path.dirname(self.configFile), recursive=False)
                     self.observer.start()
+                return True
 
             except ValueError as e:
                 print("Config syntax error: " + str(e))
                 if self.config is None:
                     raise SyntaxError("Config syntax error: " + str(e))
+        return False
 
     def _onChanged(self):
         try:
-            self.reload(self.configFile)
-            print "Config reload complete. Start calling change handlers"
-            self.emit("changed")
+            if self.reload(self.configFile):
+                print "Config reload complete. Start calling change handlers"
+                self.emit("changed")
         except Exception, e:
             print "ERROR: Something wrong with new config file. staying with old one: "+repr(e)
 
