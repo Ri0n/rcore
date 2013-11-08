@@ -96,7 +96,12 @@ class Core(Observable):
             elif logDest == 'stdout':
                 log.startLogging(sys.stdout)
             else:
-                log.startLogging(DailyLogFile(os.path.basename(logDest), os.path.dirname(logDest)))
+                dn = os.path.dirname(logDest)
+                if not dn:
+                    dn = self.get_default_log_dir()
+                if dn and not os.path.exists(dn):
+                    os.makedirs(dn, 0755)
+                log.startLogging(DailyLogFile(os.path.basename(logDest), dn))
         except Exception as e:
             log.startLogging(sys.stdout)
             log.msg("Setting log from config file is failed. continue with logging to stdout: " + str(e))
@@ -106,6 +111,14 @@ class Core(Observable):
         self._users = {}
         self.mainContextId = makeContext(MainContext)
         setCurrentContext(self.mainContextId)
+
+    def get_default_log_dir(self):
+        """
+        Returns directory for storing logs. this function is called if log destination is just file w/o path
+
+        it should be reimplemented in child class if it wants control log destination dir
+        """
+        return ""
             
     def run(self):
         reactor.run()
