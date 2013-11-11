@@ -115,7 +115,7 @@ class Config(Observable):
         if not os.path.exists(d):
             os.makedirs(d, 0755)  # hardcoded chmod?
         with open(filename, "w") as f:
-            json.dump(self.config, f)
+            json.dump(self.config, f, indent=4)
 
 if "config" not in globals():
     config = Config()
