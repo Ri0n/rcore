@@ -39,6 +39,8 @@ from rcore.rpctools import RPCService
 from rcore.error import InternalError
 from rcore.observer import Observable
 
+_default_locale = locale.getdefaultlocale()[1]
+
 
 def get_system_username():
     try:
@@ -49,11 +51,20 @@ def get_system_username():
         # (a very restricted chroot environment, for example).
         return ''
     try:
-        result = result.decode(locale.getdefaultlocale()[1])
+        result = result.decode(_default_locale)
     except UnicodeDecodeError:
         # UnicodeDecodeError - preventive treatment for non-latin Windows.
         return ''
     return result
+
+
+def sys2uni(s):
+    if isinstance(s, unicode):
+        return s
+    try:
+        return str(s).decode(_default_locale)
+    except UnicodeDecodeError:
+        return ""
 
 
 class MainContext(Context):
