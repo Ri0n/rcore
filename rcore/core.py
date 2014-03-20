@@ -174,7 +174,7 @@ class Core(Observable):
         from rcore.config import config
         try:
             if config()['debug']['enable']:
-                return bool(int(config().debug.get(opt, 0))) if opt else True
+                return bool(int(config()['debug'].get(opt, True))) if opt else True
         except:
             pass
         return False
