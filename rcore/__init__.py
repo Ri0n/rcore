@@ -28,14 +28,14 @@ from __future__ import absolute_import
 
 __author__="rion"
 __date__ ="$09.02.2010 19:23:42$"
-__version_info__ = (1, 0, 1)
+__version_info__ = (1, 0, 2)
 __version__ = '.'.join(map(str, __version_info__))
 
 
 from rcore.config import config
 from rcore.scheduler import scheduler
-from rcore.context import getContext, log
+from rcore.context import getContext, log, err_log
 from rcore.core import Core, get_system_username, sys2uni
 from rcore.observer import Observable
 
-__all__ = ["config", "scheduler", "getContext" "Core", "log", "Observable", "get_system_username", "sys2uni"]
+__all__ = ["config", "scheduler", "getContext" "Core", "log", "err_log", "Observable", "get_system_username", "sys2uni"]

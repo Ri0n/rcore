@@ -82,6 +82,12 @@ class Context(object):
     def log(self, msg):
         twistedLog.msg(self.logPrefix+msg)
 
+    def err_log(self, msg, why=None):
+        if isinstance(msg, bytes):
+            twistedLog.err(self.logPrefix+msg, why)
+        else:
+            twistedLog.err(msg, why if isinstance(why, str) else why.encode('utf-8'))
+
     def closeDb(self):
         if self._db:
             try:
@@ -108,6 +114,11 @@ class Context(object):
     
 def log(text):
     getContext().log(text)
+
+
+def err_log(text, why=None):
+    getContext().err_log(text, why)
+
     
 def makeContext(constructor, *args, **kw):
     def getUID():

@@ -38,13 +38,14 @@ class RegularError(Exception):
         self.value = value
 
     def __str__(self):
-        return str(self.toText()[1])
+        txt = self.toText()[1]
+        return txt if isinstance(txt, str) else txt.encode('utf-8')
     
     def __repr__(self):
         return self.__class__.__name__ + "(" + repr(self.toText()[1]) + ")"
 
     def toText(self, addText = ""):
-        return self.code, str(self.value) + addText
+        return self.code, (self.value if isinstance(self.value, bytes) else unicode(self.value)) + addText
 
     def toFailure(self, exc_tb = None):
         return failure.Failure(self, exc_tb=exc_tb)

@@ -3,7 +3,7 @@
 from distutils.core import setup
 dist = setup(
     name='rcore',
-    version='0.2',
+    version='1.0.2',
     description = "Core for rion's python daemons",
     long_description = """jsut a packages which includes all often
     necessary tools like xmlrpc, schedulers, config handing, db and etc""",
