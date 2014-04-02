@@ -40,6 +40,10 @@ class RegularError(Exception):
     def __str__(self):
         txt = self.toText()[1]
         return txt if isinstance(txt, str) else txt.encode('utf-8')
+
+    def __unicode__(self):
+        txt = self.toText()[1]
+        return txt.decode('utf-8') if isinstance(txt, str) else unicode(txt)
     
     def __repr__(self):
         return self.__class__.__name__ + "(" + repr(self.toText()[1]) + ")"

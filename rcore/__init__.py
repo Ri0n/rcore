@@ -28,7 +28,7 @@ from __future__ import absolute_import
 
 __author__="rion"
 __date__ ="$09.02.2010 19:23:42$"
-__version_info__ = (1, 0, 2)
+__version_info__ = (1, 0, 3)
 __version__ = '.'.join(map(str, __version_info__))
 
 
