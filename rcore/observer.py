@@ -85,7 +85,7 @@ class Observable(object):
             else:
                 del self.__dict__["connections"][eventName]
             return
-        except Exception, e:
+        except Exception as e:
             print ("disconnect failed: " + repr(e))
     
     def disconnectAll(self):

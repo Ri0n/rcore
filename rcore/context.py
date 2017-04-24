@@ -92,7 +92,7 @@ class Context(object):
         if self._db:
             try:
                 self._db.commit()
-            except Exception, e:
+            except Exception as e:
                 self.log("ignoring db exceptions: " + str(e))
             self._db.close()
             self._db = None

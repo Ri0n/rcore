@@ -111,7 +111,7 @@ class Core(Observable):
                 if not dn:
                     dn = self.get_default_log_dir()
                 if dn and not os.path.exists(dn):
-                    os.makedirs(dn, 0755)
+                    os.makedirs(dn, 0o755)
                 log.startLogging(DailyLogFile(os.path.basename(logDest), dn))
         except Exception as e:
             log.startLogging(sys.stdout)

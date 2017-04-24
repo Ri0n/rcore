@@ -88,7 +88,7 @@ class Condition(object):
         if valType and type(v) != valType: # what about parent classes?
             try:
                 v = valType(v)
-            except Exception, e:
+            except Exception as e:
                 raise InvalidFilterParametersError("Type mismatch: " + repr(e))
         return v
 
