@@ -191,7 +191,7 @@ class Service(RPCService):
     def __call__(self, *params):
         if self._methodPath:
             try:
-                print "XML-RPC %s:" % self.__class__.__name__, self._methodPath, params
+                print ("XML-RPC %s:" % self.__class__.__name__, self._methodPath, params)
                 proxy = self._getProxy()
                 proxy.queryFactory.noisy = False
                 wfd = waitForDeferred(proxy.callRemote(self._methodPath, *params))
@@ -246,7 +246,7 @@ class ExchangableService(Service):
         
         def checkConnection(failure):
             failure.trap(ConnectionRefusedError)
-            print "trying next proxy if available"
+            print ("trying next proxy if available")
             self.__class__._needNextProxy = True
             return Service.__call__(self, *params).addErrback(checkConnection)
         

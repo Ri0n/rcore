@@ -101,10 +101,10 @@ class Config(Observable):
     def _onChanged(self):
         try:
             if self.reload(self.configFile):
-                print "Config reload complete. Start calling change handlers"
+                print ("Config reload complete. Start calling change handlers")
                 self.emit("changed")
         except Exception, e:
-            print "ERROR: Something wrong with new config file. staying with old one: "+repr(e)
+            print ("ERROR: Something wrong with new config file. staying with old one: "+repr(e))
 
     def __call__(self):
         return self.config

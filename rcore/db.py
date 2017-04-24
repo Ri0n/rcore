@@ -91,4 +91,4 @@ class SQLACriteria(Criteria):
 if __name__ == '__main__':
     t1 = table('t1', column('a'), column('b'))
     t2 = Values((1, 0.5), (2, -0.5)).alias('weights')
-    print select([t1, t2]).select_from(t1.join(t2, t1.c.a == t2.c.column1))
+    print (select([t1, t2]).select_from(t1.join(t2, t1.c.a == t2.c.column1)))

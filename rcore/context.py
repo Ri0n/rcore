@@ -166,7 +166,7 @@ def executeInExactContext(func, constructor, *args, **kw):
     """
     from rcore.core import Core
     if Core.instance().debugEnabled():
-        print "Context: execute in context: ", str(func)
+        print ("Context: execute in context: " + str(func))
     
     def deleteTempContext(result):
         deleteContext(contextId)
